@@ -26,6 +26,9 @@ message(${CMAKE_CURRENT_SOURCE_DIR}/spdlog/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/openssl/utils/include)
 add_subdirectory(openssl)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/zorro/encrypt)
+add_subdirectory(zorro)
+
 #FIND_PACKAGE(PkgConfig REQUIRED)
 #PKG_SEARCH_MODULE(PKG_OPENSSL REQUIRED openssl)
 #PKG_SEARCH_MODULE(PKG_LIBSSL REQUIRED libssl)
@@ -41,7 +44,7 @@ add_subdirectory(spdlog)
 add_executable(spdlogDecrypt ${SOURCE_FILES})
 
 # 将第三方的库链接到可执行文件
-target_link_libraries(spdlogDecrypt spdlog::spdlog openssl-utils)
+target_link_libraries(spdlogDecrypt zorro-encrypt spdlog::spdlog  openssl-utils )
 #target_link_libraries(spdlogDecrypt openssl-utils)
 
 #add_executable(spdlogtest main.cpp)

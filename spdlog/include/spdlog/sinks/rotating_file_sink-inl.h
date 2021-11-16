@@ -22,6 +22,7 @@
 #include <AES.h>
 #include <AES2.h>
 #include <spd_aes.h>
+#include "xor.h"
 #include <spdlog/details/fmt_helper.h>
 
 namespace spdlog {
@@ -72,6 +73,10 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
     base_sink<Mutex>::formatter_->format(msg, formatted);
     if (enc_) {
         std::string plainText(formatted.data(), formatted.size());
+        int zorro_encrypt_len = formatted.size() + sizeof(zorro::data_header);
+        std::unique_ptr<unsigned char[]> buffer_enc(new unsigned char[zorro_encrypt_len]());
+        int encrypt_len = zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(buffer_enc.get()), (uint16_t)formatted.size());
+        /*
         int aes_encrypt_len = ams::spd_aes::get_aes_encrypt_len(formatted.size());
         std::unique_ptr<unsigned char[]> buffer_enc(new unsigned char[aes_encrypt_len]());
 
@@ -84,6 +89,9 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
 
         memory_buf_t cipherText;
         cipherText.append(buffer_enc.get(), buffer_enc.get() + aes_encrypt_len);
+          */
+        memory_buf_t cipherText;
+        cipherText.append(buffer_enc.get(), buffer_enc.get() + encrypt_len);
         current_size_ += cipherText.size();
         if (current_size_ > max_size_) {
             rotate_();

@@ -13,7 +13,7 @@ void spdlog_reset_av_print_last_time();
 void spdlog_normal_print(spdlog::level::level_enum l, const char* tag, const char* fmt, ...);
 void spdlog_audio_print(spdlog::level::level_enum l, const char* tag, const char* fmt, ...);
 void spdlog_video_print(spdlog::level::level_enum l, const char* tag, const char* fmt, ...);
-void init_spdlog(const std::string &file);
+void init_spdlog(const std::string &file, bool encrypt);
 void deinit_spdlog();
 
 #define SPDLOGI(TAG, fmt, ...) spdlog_normal_print(spdlog::level::level_enum::info, TAG, fmt, ##__VA_ARGS__)

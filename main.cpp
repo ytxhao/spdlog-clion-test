@@ -15,14 +15,63 @@
 #include <openssl/utils/include/AES2.h>
 #include <openssl/utils/include/spd_aes.h>
 #include <zconf.h>
+#include "xor.h"
 
 #define BLOCK_SIZE 16
 //
 #define TAG "spdlog-test"
 
-#define MAXLEN 1024
+#define MAXLEN 2048
 
 int main(int argc, char *argv[]) {
+    std::string *log_path;
+    char *buffer;
+    if((buffer = getcwd(nullptr,0)) == nullptr){
+        perror("getcwd error");
+    } else {
+        printf("%s\n", buffer);
+        log_path = new std::string(buffer);
+        init_spdlog(*log_path, true);
+        free(buffer);
+    }
+    SPDLOGI(TAG,"ABCDEFG1234567");
+
+    SPDLOGI(TAG,"0123456789"
+                "0123456789"
+                "0123456789"
+                "0123456789"
+                "0123456789"
+                "0123456789");
+
+    FILE * outfile, *infile;
+    std::string outfile_path;
+    outfile_path = *log_path + "/normal/ams_normal_rotating.dec";
+    outfile = fopen(outfile_path.c_str(), "wb" );
+    std::string infile_path = *log_path + "/normal/ams_normal_rotating.enc";
+    infile = fopen(infile_path.c_str(), "rb");
+    char dec_buf[MAXLEN] = {0};
+    char buf[MAXLEN];
+    int rc;
+    int read_len = sizeof(zorro::data_header);
+    while( (rc = fread(buf, 1, read_len, infile)) != 0 )
+    {
+        if (rc >= sizeof(zorro::data_header)) {
+            if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0x00 && buf[3] == 0x01) {
+                uint32_t real_enc_len = 0;
+                memcpy(&real_enc_len, buf + 4, 4);
+                std::cout << "--------------------real_enc_len:"<<real_enc_len<<std::endl;
+                fread(buf, 1, real_enc_len, infile);
+                zorro::xor_decrypt(buf, buf, real_enc_len);
+                std::cout << "---------------------buf:"<<buf;
+                memset(buf, 0 , MAXLEN);
+            }
+        }
+
+    }
+    return 0;
+}
+
+int main8(int argc, char *argv[]) {
 
 //    for(int i=0;i < argc;i++)
 //    {
@@ -78,7 +127,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int main0(int argc,char *argv[]) {
+int main9(int argc,char *argv[]) {
 
     std::string *log_path;
     char *buffer;
@@ -87,11 +136,11 @@ int main0(int argc,char *argv[]) {
     } else {
         printf("%s\n", buffer);
         log_path = new std::string(buffer);
-        init_spdlog(*log_path);
+        init_spdlog(*log_path, true);
         free(buffer);
     }
 
-    SPDLOGI(TAG,"ABCDEFG1234567");
+    SPDLOGI(TAG,"0123456789");
     FILE * outfile, *infile;
     std::string outfile_path;
     outfile_path = *log_path + "/normal/ams_normal_rotating.dec";
@@ -137,7 +186,7 @@ int main0(int argc,char *argv[]) {
 
     return 1;
 }
-int main1(int argc,char *argv[]) {
+int main10(int argc,char *argv[]) {
     const  char * chtest = std::string("aaaaaaa").c_str();
     std::cout << "Hello, World!" << std::endl;
     spdlog::info("Welcome to spdlog version {}.{}.{}  !", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);

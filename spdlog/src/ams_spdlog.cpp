@@ -18,13 +18,18 @@ static std::shared_ptr<spdlog::logger> audio_logger = nullptr;
 static std::shared_ptr<spdlog::logger> video_logger = nullptr;
 static long long audio_logger_last_time = 0;
 static long long video_logger_last_time = 0;
-void init_spdlog(const std::string &path) {
+void init_spdlog(const std::string &path, bool encrypt) {
     if (isInit) {
         return;
     }
     spdlog::set_level(spdlog::level::debug);
-    std::string normal_file = path + "/normal/ams_normal_rotating.enc";
-    auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(normal_file, 1024 * 1024 * 5, 3, false);
+    std::string normal_file;
+    if (encrypt) {
+        normal_file = path + "/normal/ams_normal_rotating.enc";
+    } else {
+        normal_file = path + "/normal/ams_normal_rotating.log";
+    }
+    auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(normal_file, 1024 * 1024 * 5, 3, encrypt);
     file_sink->set_pattern("%Y-%m-%d %H:%M:%S.%e %P-%t %L/%v");
 
 //    auto android_sink = std::make_shared<spdlog::sinks::android_sink_mt>("", true);

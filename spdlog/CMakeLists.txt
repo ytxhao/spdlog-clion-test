@@ -149,7 +149,7 @@ include_directories(${PROJECT_SOURCE_DIR}/../openssl/utils/include)
 
 target_include_directories(spdlog PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
                                          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-target_link_libraries(spdlog PUBLIC Threads::Threads openssl-utils)
+target_link_libraries(spdlog PUBLIC Threads::Threads zorro-encrypt openssl-utils)
 spdlog_enable_warnings(spdlog)
 
 #set_target_properties(spdlog PROPERTIES VERSION ${SPDLOG_VERSION} SOVERSION ${SPDLOG_VERSION_MAJOR})
