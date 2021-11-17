@@ -4,7 +4,9 @@
 #include <cstring>
 #include <cassert>
 //#include <direct.h>
-
+#include <queue>
+#include <vector>
+#include <list>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -42,32 +44,42 @@ int main(int argc, char *argv[]) {
                 "0123456789"
                 "0123456789"
                 "0123456789");
-
+    SPDLOGI(TAG,"yyyyyyyy");
     FILE * outfile, *infile;
     std::string outfile_path;
     outfile_path = *log_path + "/normal/ams_normal_rotating.dec";
     outfile = fopen(outfile_path.c_str(), "wb" );
     std::string infile_path = *log_path + "/normal/ams_normal_rotating.enc";
     infile = fopen(infile_path.c_str(), "rb");
-    char dec_buf[MAXLEN] = {0};
     char buf[MAXLEN];
-    int rc;
-    int read_len = sizeof(zorro::data_header);
-    while( (rc = fread(buf, 1, read_len, infile)) != 0 )
+    char header_buf[MAXLEN];
+    size_t rc;
+    int index = 0;
+    while( (rc = fread(buf, 1, 1, infile)) != 0 )
     {
-        if (rc >= sizeof(zorro::data_header)) {
-            if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0x00 && buf[3] == 0x01) {
+        header_buf[index] = buf[0];
+        if (index >= 3) {
+            if (header_buf[0] == 0x00 && header_buf[1] == 0x00 && header_buf[2] == 0x00 && header_buf[3] == 0x01) {
+                index = 0;
                 uint32_t real_enc_len = 0;
-                memcpy(&real_enc_len, buf + 4, 4);
+                fread(buf, 1, 4, infile);
+                memcpy(&real_enc_len, buf , 4);
                 std::cout << "--------------------real_enc_len:"<<real_enc_len<<std::endl;
+                memset(buf, 0 , MAXLEN);
                 fread(buf, 1, real_enc_len, infile);
                 zorro::xor_decrypt(buf, buf, real_enc_len);
                 std::cout << "---------------------buf:"<<buf;
                 memset(buf, 0 , MAXLEN);
+            } else {
+                memmove(header_buf, header_buf + 1 , 3);
             }
+        } else {
+            index++;
         }
 
     }
+    fclose(infile);
+    fclose(outfile);
     return 0;
 }
 

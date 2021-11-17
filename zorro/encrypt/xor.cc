@@ -58,11 +58,7 @@ int xor_encrypt(const char* in, char* out, uint32_t bytes) {
         size_t header_len = sizeof(data_header);
         size_t key_len = sizeof(key);
         memcpy(out, data_header, header_len);
-        std::cout << "xor_encrypt bytes:"<<bytes<<std::endl;
         memcpy(out + 4, &bytes, 4);
-        uint32_t test_len;
-        memcpy(&test_len, out + 4, 4);
-        std::cout << "xor_encrypt test len:"<<test_len<<std::endl;
         for (size_t i = 0; i < bytes / key_len + 1; ++i) {
             for (size_t j = 0; j < key_len && j < bytes - i * key_len; ++j) {
                 out[header_len + i * key_len  + j] = in[i * key_len  + j] ^ key[j];
