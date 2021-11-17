@@ -23,9 +23,76 @@
 //
 #define TAG "spdlog-test"
 
-#define MAXLEN 2048
+#define MAXLEN 4096
 
 int main(int argc, char *argv[]) {
+    std::string output_file_path;
+    if (argc < 2) {
+        std::cout<<"missing parameter!"<<std::endl;
+        return -1;
+    }
+
+    std::string input_file_path(argv[1]);
+
+    FILE * in_file = fopen(input_file_path.c_str(), "rb");
+    if (in_file == nullptr)
+    {
+        fprintf(stderr, "Value of errno: %d\n", errno);
+        fprintf(stderr, "Error opening input file: %s\n", strerror(errno));
+        return -1;
+    }
+
+    if (argc > 2) {
+        output_file_path.append(argv[2]);
+        std::cout << "Output file path: " << output_file_path << std::endl;
+    } else {
+        size_t pos = input_file_path.find_last_of('.');
+        if (pos == std::string::npos) {
+            fprintf(stderr, "Input file name error!\n");
+            return -1;
+        } else {
+            output_file_path = input_file_path.substr(0,pos + 1) + "dec";
+            std::cout << "Output file path: " << output_file_path << std::endl;
+        }
+    }
+
+    FILE * out_file = fopen(output_file_path.c_str(), "wb");
+    if (out_file == nullptr) {
+        fprintf(stderr, "Value of errno: %d\n", errno);
+        fprintf(stderr, "Error opening output file: %s\n", strerror(errno));
+        return -1;
+    }
+
+    char read_buf[MAXLEN] = {0};
+    char header_buf[8] = {0};
+    int index = 0;
+    while(fread(read_buf, 1, 1, in_file) != 0)
+    {
+        header_buf[index] = read_buf[0];
+        if (index >= 3) {
+            if (header_buf[0] == 0x00 && header_buf[1] == 0x00 && header_buf[2] == 0x00 && header_buf[3] == 0x01) {
+                index = 0;
+                uint32_t real_encrypt_len = 0;
+                fread(read_buf, 1, 4, in_file);
+                memcpy(&real_encrypt_len, read_buf , 4);
+                memset(read_buf, 0 , MAXLEN);
+                fread(read_buf, 1, real_encrypt_len, in_file);
+                zorro::xor_decrypt(read_buf, read_buf, real_encrypt_len);
+                fwrite(read_buf, 1, real_encrypt_len, out_file);
+                memset(read_buf, 0 , MAXLEN);
+            } else {
+                memmove(header_buf, header_buf + 1 , 3);
+            }
+        } else {
+            index++;
+        }
+    }
+    fclose(in_file);
+    fclose(out_file);
+    return 0;
+}
+
+int main_xor_encrypt(int argc, char *argv[]) {
     std::string *log_path;
     char *buffer;
     if((buffer = getcwd(nullptr,0)) == nullptr){

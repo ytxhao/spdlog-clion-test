@@ -41,10 +41,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/spdlog/include)
 add_subdirectory(spdlog)
 
 # 编译成可执行文件，如果编译动态库可以用：target_link_libraries
-add_executable(spdlogDecrypt ${SOURCE_FILES})
+add_executable(spdlog-decrypt ${SOURCE_FILES})
 
 # 将第三方的库链接到可执行文件
-target_link_libraries(spdlogDecrypt zorro-encrypt spdlog::spdlog  openssl-utils )
+target_link_libraries(spdlog-decrypt zorro-encrypt spdlog::spdlog  openssl-utils )
 #target_link_libraries(spdlogDecrypt openssl-utils)
 
 #add_executable(spdlogtest main.cpp)
