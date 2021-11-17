@@ -72,13 +72,10 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
     memory_buf_t formatted;
     base_sink<Mutex>::formatter_->format(msg, formatted);
     if (enc_) {
-        std::string plainText(formatted.data(), formatted.size());
-        size_t zorro_encrypt_len = formatted.size();
         size_t zorro_encrypt_wrap_len = formatted.size() + sizeof(zorro::data_header);
-        std::unique_ptr<unsigned char[]> encrypt_buffer(new unsigned char[zorro_encrypt_len]());
         std::unique_ptr<unsigned char[]> encrypt_buffer_wrap(new unsigned char[zorro_encrypt_wrap_len]());
-        zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(encrypt_buffer.get()), formatted.size());
-        zorro::xor_encrypt_data_wrap(reinterpret_cast<const char *>(encrypt_buffer.get()), zorro_encrypt_len,
+        zorro::xor_encrypt(formatted.data(), formatted.data(), formatted.size());
+        zorro::xor_encrypt_data_wrap(formatted.data(), formatted.size(),
                                      reinterpret_cast<char *>(encrypt_buffer_wrap.get()), zorro_encrypt_wrap_len);
 //        zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(encrypt_buffer.get()), (uint16_t)formatted.size());
         /*
