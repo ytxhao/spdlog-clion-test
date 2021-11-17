@@ -22,55 +22,37 @@ namespace zorro {
 unsigned char data_header[8] = {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
 
 int xor_encrypt(char* data, size_t bytes) {
-  if (data && bytes > 0) {
-    size_t key_len = sizeof(key);
-    for (size_t i = 0; i < bytes / key_len + 1; ++i) {
-      for (size_t j = 0; j < key_len && j < bytes - i * key_len; ++j) {
-        data[i * key_len  + j] ^= key[j];
-      }
-    }
-    return bytes;
-  }
-
-  return -1;
-}
-
-int xor_decrypt(char* data, size_t bytes) {
-  return xor_encrypt(data, bytes);
-}
-
-//int xor_encrypt(const char* in, char* out, size_t bytes) {
-//  if (in && out && bytes > 0) {
-//    size_t key_len = sizeof(key);
-//    for (size_t i = 0; i < bytes / key_len + 1; ++i) {
-//      for (size_t j = 0; j < key_len && j < bytes - i * key_len; ++j) {
-//        out[i * key_len  + j] = in[i * key_len  + j] ^ key[j];
-//      }
-//    }
-//
-//    return bytes;
-//  }
-//  return -1;
-//}
-
-int xor_encrypt(const char* in, char* out, uint32_t bytes) {
-    if (in && out && bytes > 0) {
-        size_t header_len = sizeof(data_header);
+    if (data && bytes > 0) {
         size_t key_len = sizeof(key);
-        memcpy(out, data_header, header_len);
-        memcpy(out + 4, &bytes, 4);
         for (size_t i = 0; i < bytes / key_len + 1; ++i) {
             for (size_t j = 0; j < key_len && j < bytes - i * key_len; ++j) {
-                out[header_len + i * key_len  + j] = in[i * key_len  + j] ^ key[j];
+                data[i * key_len  + j] ^= key[j];
             }
         }
-
-        return bytes + header_len;
+        return bytes;
     }
+
     return -1;
 }
 
-int xor_decrypt(const char* in, char* out, uint32_t bytes) {
+int xor_decrypt(char* data, size_t bytes) {
+    return xor_encrypt(data, bytes);
+}
+
+int xor_encrypt_data_wrap(const char* in, size_t in_len, char* out, size_t out_len) {
+    size_t header_len = sizeof(data_header);
+    if (in_len +  header_len <= out_len) {
+        memcpy(out, data_header, header_len);
+        memcpy(out + 4, &in_len, 4);
+        memcpy(out + header_len, in, in_len);
+        return in_len +  header_len;
+    } else {
+        return -1;
+    }
+
+}
+
+int xor_encrypt(const char* in, char* out, size_t bytes) {
     if (in && out && bytes > 0) {
         size_t key_len = sizeof(key);
         for (size_t i = 0; i < bytes / key_len + 1; ++i) {
@@ -83,9 +65,9 @@ int xor_decrypt(const char* in, char* out, uint32_t bytes) {
     return -1;
 }
 
-//int xor_decrypt(const char* in, char* out, size_t bytes) {
-//  return xor_encrypt(in, out, bytes);
-//}
+int xor_decrypt(const char* in, char* out, size_t bytes) {
+    return xor_encrypt(in, out, bytes);
+}
 
 #if 0
 int xor_encrypt(const uint32_t *in, uint32_t* out, size_t key_start_pos, bool reverse_key_order) {

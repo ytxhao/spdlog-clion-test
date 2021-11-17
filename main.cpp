@@ -61,13 +61,13 @@ int main(int argc, char *argv[]) {
         if (index >= 3) {
             if (header_buf[0] == 0x00 && header_buf[1] == 0x00 && header_buf[2] == 0x00 && header_buf[3] == 0x01) {
                 index = 0;
-                uint32_t real_enc_len = 0;
+                uint32_t real_encrypt_len = 0;
                 fread(buf, 1, 4, infile);
-                memcpy(&real_enc_len, buf , 4);
-                std::cout << "--------------------real_enc_len:"<<real_enc_len<<std::endl;
+                memcpy(&real_encrypt_len, buf , 4);
+                std::cout << "--------------------real_encrypt_len:"<<real_encrypt_len<<std::endl;
                 memset(buf, 0 , MAXLEN);
-                fread(buf, 1, real_enc_len, infile);
-                zorro::xor_decrypt(buf, buf, real_enc_len);
+                fread(buf, 1, real_encrypt_len, infile);
+                zorro::xor_decrypt(buf, buf, real_encrypt_len);
                 std::cout << "---------------------buf:"<<buf;
                 memset(buf, 0 , MAXLEN);
             } else {

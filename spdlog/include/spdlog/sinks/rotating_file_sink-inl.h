@@ -73,9 +73,14 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
     base_sink<Mutex>::formatter_->format(msg, formatted);
     if (enc_) {
         std::string plainText(formatted.data(), formatted.size());
-        int zorro_encrypt_len = formatted.size() + sizeof(zorro::data_header);
-        std::unique_ptr<unsigned char[]> buffer_enc(new unsigned char[zorro_encrypt_len]());
-        int encrypt_len = zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(buffer_enc.get()), (uint16_t)formatted.size());
+        size_t zorro_encrypt_len = formatted.size();
+        size_t zorro_encrypt_wrap_len = formatted.size() + sizeof(zorro::data_header);
+        std::unique_ptr<unsigned char[]> encrypt_buffer(new unsigned char[zorro_encrypt_len]());
+        std::unique_ptr<unsigned char[]> encrypt_buffer_wrap(new unsigned char[zorro_encrypt_wrap_len]());
+        zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(encrypt_buffer.get()), formatted.size());
+        zorro::xor_encrypt_data_wrap(reinterpret_cast<const char *>(encrypt_buffer.get()), zorro_encrypt_len,
+                                     reinterpret_cast<char *>(encrypt_buffer_wrap.get()), zorro_encrypt_wrap_len);
+//        zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(encrypt_buffer.get()), (uint16_t)formatted.size());
         /*
         int aes_encrypt_len = ams::spd_aes::get_aes_encrypt_len(formatted.size());
         std::unique_ptr<unsigned char[]> buffer_enc(new unsigned char[aes_encrypt_len]());
@@ -91,7 +96,7 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
         cipherText.append(buffer_enc.get(), buffer_enc.get() + aes_encrypt_len);
           */
         memory_buf_t cipherText;
-        cipherText.append(buffer_enc.get(), buffer_enc.get() + encrypt_len);
+        cipherText.append(encrypt_buffer_wrap.get(), encrypt_buffer_wrap.get() + zorro_encrypt_wrap_len);
         current_size_ += cipherText.size();
         if (current_size_ > max_size_) {
             rotate_();
