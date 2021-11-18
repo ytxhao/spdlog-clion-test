@@ -27,6 +27,23 @@
 
 int main(int argc, char *argv[]) {
     std::string output_file_path;
+//    unsigned char data_header[4] = {0x00, 0x00, 0x00, 0x01};
+//    int i = 128;
+//    for (i=0;i < 128 - 3;i++) {
+//        unsigned char a = zorro::key[i] ^data_header[0];
+//        unsigned char b = zorro::key[i+1] ^data_header[1];
+//        unsigned char c = zorro::key[i+2] ^data_header[2];
+////        unsigned char d = zorro::key[i+3] ^data_header[3];
+//        unsigned char d = 43;
+//
+//        if ((a > 7 && a <128) && (b > 7 && b <128)&&(c > 7 && c <128)&&(d > 7 && d <128)) {
+//            std::cout<<"================="<<std::endl;
+//            std::cout<<"i:"<<i<<std::endl;
+//            std::cout<<"================="<<std::endl;
+//        }
+//        std::cout<<"a:"<<a<<" b:"<<b<<" c:"<<c <<" d:"<<d<<std::endl;
+//    }
+
     if (argc < 2) {
         std::cout<<"missing parameter!"<<std::endl;
         return -1;

@@ -72,34 +72,22 @@ SPDLOG_INLINE void rotating_file_sink<Mutex>::sink_it_(const details::log_msg &m
     memory_buf_t formatted;
     base_sink<Mutex>::formatter_->format(msg, formatted);
     if (enc_) {
-        size_t zorro_encrypt_wrap_len = formatted.size() + sizeof(zorro::data_header);
-        std::unique_ptr<unsigned char[]> encrypt_buffer_wrap(new unsigned char[zorro_encrypt_wrap_len]());
+        size_t encrypt_header_len = sizeof(zorro::data_header);
+        size_t encrypt_data_len = formatted.size();
+        memory_buf_t encrypt_header;
+        encrypt_header.try_resize(encrypt_header_len);
+        memcpy(encrypt_header.data(), zorro::data_header, encrypt_header_len);
+        memcpy(encrypt_header.data() + 4, &encrypt_data_len, 4);
+
         zorro::xor_encrypt(formatted.data(), formatted.data(), formatted.size());
-        zorro::xor_encrypt_data_wrap(formatted.data(), formatted.size(),
-                                     reinterpret_cast<char *>(encrypt_buffer_wrap.get()), zorro_encrypt_wrap_len);
-//        zorro::xor_encrypt(formatted.data(), reinterpret_cast<char *>(encrypt_buffer.get()), (uint16_t)formatted.size());
-        /*
-        int aes_encrypt_len = ams::spd_aes::get_aes_encrypt_len(formatted.size());
-        std::unique_ptr<unsigned char[]> buffer_enc(new unsigned char[aes_encrypt_len]());
 
-        ams::spd_aes::ecb_encrypt(reinterpret_cast<unsigned char *>(formatted.data()),
-                formatted.size(),
-                buffer_enc.get(),
-                aes_encrypt_len,
-                (unsigned char *) ams::spd_aes::key.data(),
-                ams::spd_aes::key.size());
-
-        memory_buf_t cipherText;
-        cipherText.append(buffer_enc.get(), buffer_enc.get() + aes_encrypt_len);
-          */
-        memory_buf_t cipherText;
-        cipherText.append(encrypt_buffer_wrap.get(), encrypt_buffer_wrap.get() + zorro_encrypt_wrap_len);
-        current_size_ += cipherText.size();
+        current_size_ += formatted.size() + encrypt_header.size();
         if (current_size_ > max_size_) {
             rotate_();
-            current_size_ = cipherText.size();
+            current_size_ = formatted.size() + encrypt_header.size();
         }
-        file_helper_.write(cipherText);
+        file_helper_.write(encrypt_header);
+        file_helper_.write(formatted);
     } else {
         current_size_ += formatted.size();
         if (current_size_ > max_size_)
