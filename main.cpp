@@ -17,7 +17,10 @@
 #include <openssl/utils/include/AES2.h>
 #include <openssl/utils/include/spd_aes.h>
 #include <zconf.h>
+#include <fstream>
 #include "xor.h"
+#include "room_message.pb.h"
+#include "search_request.pb.h"
 
 #define BLOCK_SIZE 16
 //
@@ -26,6 +29,38 @@
 #define MAXLEN 4096
 
 int main(int argc, char *argv[]) {
+    SearchRequest data;
+    data.set_query("yy");
+    data.set_page_number(10);
+    data.set_result_per_page(12);
+    std::cout <<"origin data: "<< data.query() << "," << data.page_number() << "," << data.result_per_page()<<std::endl;
+
+    std::fstream output("./log", std::ios::out | std::ios::trunc | std::ios::binary);
+    //此处是执行序列化的操作，该方法执行完后，对应生成的二进制文件就保存在log文件中
+    if (!data.SerializeToOstream(&output))
+    {
+        std::cerr << "failed to write msg." << std::endl;
+        return -1;
+    }
+//    getchar();
+    if (output.is_open())
+    {
+        output.close();
+    }
+    SearchRequest parsedata;
+    std::fstream input("./log", std::ios::in | std::ios::binary);
+    //此处是执行反序列化的操作
+    if (!parsedata.ParseFromIstream(&input))
+    {
+        std::cerr << "failed to parse message." << std::endl;
+        return -1;
+    }
+    std::cout <<"after serialization and parse: "<< parsedata.query() << "," << parsedata.page_number() << "," << parsedata.result_per_page()<<std::endl;
+
+    return 0;
+}
+
+int main_xor(int argc, char *argv[]) {
     std::string output_file_path;
 //    unsigned char data_header[4] = {0x00, 0x00, 0x00, 0x01};
 //    int i = 128;

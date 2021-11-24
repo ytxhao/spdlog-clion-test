@@ -1,0 +1,11 @@
+prefix=/Users/yuhao/workspace/protobuftest/install
+exec_prefix=/Users/yuhao/workspace/protobuftest/install
+libdir=/Users/yuhao/workspace/protobuftest/install/lib
+includedir=/Users/yuhao/workspace/protobuftest/install/include
+
+Name: Protocol Buffers
+Description: Google's Data Interchange Format
+Version: 3.19.1.0
+Libs: -L${libdir} -lprotobuf 
+Cflags: -I${includedir}
+Conflicts: protobuf-lite

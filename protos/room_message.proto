@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package zorro.protobuf;
+
+message RtpHdrExt {
+  string id = 1;
+  string uri = 2;
+}
+
+message RtcpFBType {
+  string type = 1;
+  string subType = 2;
+}
+
+message PayloadType {
+  int32 id = 1;
+  string name = 2;
+  int32 clockrate = 3;
+  int32 channels = 4;
+  map<string, string> parameters = 5;
+  repeated RtcpFBType rtcpFb = 6;
+}
+
+message Source {
+  string ssrc = 1;
+  string owner = 2;
+  map<string, string> parameters = 3;
+}
+
+message SourceGroup {
+  string semantics = 1;
+  repeated string ssrc = 2;
+}
+
+message Description {
+  string media = 1;
+  int32 maxptime = 2;
+  repeated PayloadType payloadType = 3;
+  repeated RtpHdrExt rtpHdrExt = 4;
+  bool rtcpMux = 5;
+  repeated Source source = 6;
+  repeated SourceGroup sourceGroup = 7;
+}
+
+message Fingerprint {
+  string hashType = 1;
+  bool required = 2;
+  string setup = 3;
+  string value = 4;
+}
+
+message Crypto {
+  string tag = 1;
+  string suite = 2;
+  string keyParams = 3;
+  string sessParams = 4;
+}
+
+message Candidate {
+  int32 component = 1;
+  string foundation = 2;
+  int32 generation = 3;
+  string id = 4;
+  int32 network = 5;
+  int64 priority = 6;
+  string protocol = 7;
+  string tcptype = 8;
+  string type = 9;
+  string ip = 10;
+  string domain = 11;
+  int32 port = 12;
+  string realAddr = 13;
+  int32 realPort = 14;
+}
+
+message Transport {
+  string ufrag = 1;
+  string pwd = 2;
+  bool rtcpMux = 3;
+  Fingerprint fingerprint = 4;
+  repeated Candidate candidates = 5;
+  Crypto crypto = 6;
+}
+
+message Content {
+  string creator = 1;
+  string name = 2;
+  string senders = 3;
+  Description description = 4;
+  Transport transport = 5;
+}
+
+message SDP {
+  repeated Content contents = 1;
+}
+
+message RoomMessage {
+  string action = 1;
+  string userId = 2;
+  string roomId = 3;
+  string region = 4;
+  string serverTopic = 5;
+  string userTopic = 6;
+  map<string, string> parameterMap = 7;
+  repeated string parameterList = 8;
+  SDP sdp = 9;
+}
