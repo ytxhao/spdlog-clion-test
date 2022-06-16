@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(openssl-utils)
 set(CMAKE_CXX_STANDARD 14)
+# 显示 CMake 输出所有的编译过程
+set(CMAKE_VERBOSE_MAKEFILE ON)
 if (WIN32 OR MSVC)
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
 elseif (UNIX)
