@@ -9,12 +9,15 @@ elseif (UNIX)
     # 如果只是优先查找静态库，保证 .a 后缀在前面即可，把默认的后缀加上
     # set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
-
-find_library(SSL_LIB ssl)
-find_library(CRYPTO_LIB crypto)
-
+set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/opt/openssl/lib/pkgconfig")
+link_directories(/usr/local/opt/openssl)
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_SEARCH_MODULE(PKG_OPENSSL REQUIRED openssl)
+
+find_library(SSL_LIB ssl /usr/local/opt/openssl/lib)
+find_library(CRYPTO_LIB crypto /usr/local/opt/openssl/lib)
+
+
 # PKG_SEARCH_MODULE(PKG_LIBSSL REQUIRED libssl)
 # PKG_SEARCH_MODULE(PKG_LIBCRYPTO REQUIRED libcrypto)
 #set(OPENSSL_USE_STATIC_LIBS TRUE)
@@ -36,4 +39,5 @@ message(STATUS "ossl utils path " ${CMAKE_CURRENT_SOURCE_DIR}/src/AES.cpp)
 # message("ossl utils PKG_OPENSSL_LDFLAGS " ${PKG_OPENSSL_LDFLAGS})
 add_library(openssl-utils STATIC ${OPENSSL_UTILS_FILES})
 
+#target_link_libraries(openssl-utils ${SSL_LIB} ${CRYPTO_LIB})
 target_link_libraries(openssl-utils ${SSL_LIB} ${CRYPTO_LIB})
